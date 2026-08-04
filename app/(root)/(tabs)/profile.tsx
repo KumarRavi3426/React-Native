@@ -1,0 +1,31 @@
+import { useAuth } from "@clerk/expo";
+import { router } from "expo-router";
+import React from "react";
+import { Alert, Text, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function Profile() {
+  const { signOut } = useAuth();
+
+  const handleSignOut = () => {
+    Alert.alert("Sign out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign out",
+        style: "destructive",
+        onPress: async () => {
+          await signOut();
+          router.replace("/sign-in");
+        },
+      },
+    ]);
+  };
+
+  return (
+    <SafeAreaView>
+      <TouchableOpacity>
+        <Text onPress={handleSignOut}>Log out</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
+}

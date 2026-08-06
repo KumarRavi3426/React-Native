@@ -1,6 +1,7 @@
 # React Native Notes
 
 npx expo start --tunnel --clear  
+needs to build the app in expo again after making changes to packages, or new route added
 
 ![alt text](image.png)
 
@@ -24,3 +25,18 @@ npx expo start --tunnel --clear
 
 The auth pages are Stack navigation and the main app is a Tab navigation.  
 We are using Link from expo-router to navigate between the two.  
+
+![alt text](image-8.png)
+
+## Doubts
+
+supabase and clerk connection  
+third party auth provider  
+jwt token from clerk  
+
+> creating custom hooks  
+
+rls  
+zustand  
+
+## Check later  

@@ -40,5 +40,3 @@ rls
 zustand  
 
 ## Check later  
-
-add a user and see if it's present in supabase

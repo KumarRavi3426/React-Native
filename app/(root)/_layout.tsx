@@ -28,6 +28,8 @@ export default function RootGroupLayout() {
     );
   if (needsOnboarding && pathname !== "/onboarding")
     return <Redirect href="/(root)/onboarding" />;
+  if (!needsOnboarding && pathname === "/onboarding")
+    return <Redirect href="/(root)/(tabs)" />;
 
   return <Slot />;
 }

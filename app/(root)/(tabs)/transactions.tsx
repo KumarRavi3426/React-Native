@@ -1,24 +1,24 @@
 import { TransactionRow } from "@/components/TransactionRow";
+import { useDeleteTransaction } from "@/hooks/mutations/useTransactionMutations";
 import { useAccountsQuery } from "@/hooks/queries/useAccountsQuery";
 import { useTransactionsQuery } from "@/hooks/queries/useTransactionsQuery";
-import { useDeleteTransaction } from "@/hooks/mutations/useTransactionMutations";
 import { Transaction, TransactionType } from "@/lib/services/transactions";
 import { exportTransactionsToCsv } from "@/lib/utils/exportTransactions";
 import { Feather } from "@expo/vector-icons";
+import { eachDayOfInterval, format, startOfDay, startOfMonth } from "date-fns";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { eachDayOfInterval, format, startOfDay, startOfMonth } from "date-fns";
 import { BarChart } from "react-native-gifted-charts";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -73,11 +73,15 @@ export default function TransactionsScreen() {
   const filteredTransactions = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return transactions;
-    return transactions.filter(
-      (tx) =>
-        tx.description?.toLowerCase().includes(q) ||
-        tx.category.toLowerCase().includes(q),
-    );
+
+    // Pre-calculate string versions for better performance
+    return transactions.filter((tx) => {
+      const amountStr = tx.amount.toString();
+      const descStr = tx.description?.toLowerCase() || "";
+      const catStr = tx.category.toLowerCase();
+
+      return descStr.includes(q) || catStr.includes(q) || amountStr.includes(q);
+    });
   }, [transactions, search]);
 
   const dailyIncomeExpense = useMemo(() => {
@@ -298,7 +302,7 @@ export default function TransactionsScreen() {
                     </View>
                   </View>
                 </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={true}>
                   <BarChart
                     data={dailyIncomeExpense}
                     width={Math.max(dailyIncomeExpense.length * 9, 280)}

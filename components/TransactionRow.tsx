@@ -15,6 +15,16 @@ const INPUT_METHOD_ICON: Record<
   VOICE: "mic",
 };
 
+const formatTransactionDate = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+};
+
 export function TransactionRow({
   tx,
   onDelete,
@@ -41,6 +51,9 @@ export function TransactionRow({
       <View className="flex-1">
         <Text className="text-brand-bg text-sm font-medium" numberOfLines={1}>
           {tx.description || config.label}
+        </Text>
+        <Text className="text-xs text-muted-foreground">
+          {formatTransactionDate(tx.date)}
         </Text>
         <View className="flex-row items-center gap-1.5 mt-0.5">
           <Feather

@@ -42,8 +42,6 @@ pagination
 
 ## Check later  
 
-console.log() - can be checked in the expo dev tools, not in the terminal  
-
 all useQuery - tanstack shit  
    hooks/query, hooks/mutations, lib/query, lib/services  
 

@@ -77,9 +77,15 @@ Deno.serve(async () => {
   if (usersError) throw usersError;
 
   let sent = 0;
+  let skippedNoEmail = 0;
+  let skippedNoRecentTransactions = 0;
+  let skippedNoTips = 0;
 
   for (const user of users ?? []) {
-    if (!user.email) continue;
+    if (!user.email) {
+      skippedNoEmail++;
+      continue;
+    }
 
     const { data: transactions, error: txError } = await supabase
       .from("transactions")
@@ -87,7 +93,10 @@ Deno.serve(async () => {
       .eq("user_id", user.clerk_id)
       .gte("date", weekAgo.toISOString());
     if (txError) throw txError;
-    if (!transactions || transactions.length === 0) continue;
+    if (!transactions || transactions.length === 0) {
+      skippedNoRecentTransactions++;
+      continue;
+    }
 
     const totalExpense = transactions
       .filter((tx) => tx.type === "EXPENSE")
@@ -109,7 +118,10 @@ Deno.serve(async () => {
       totalExpense,
       totalIncome,
     );
-    if (tips.length === 0) continue;
+    if (tips.length === 0) {
+      skippedNoTips++;
+      continue;
+    }
 
     const net = totalIncome - totalExpense;
     const topCategories = Object.entries(byCategory)
@@ -158,7 +170,17 @@ Deno.serve(async () => {
     sent++;
   }
 
-  return new Response(JSON.stringify({ sent }), {
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({
+      sent,
+      skipped: {
+        noEmail: skippedNoEmail,
+        noRecentTransactions: skippedNoRecentTransactions,
+        noTips: skippedNoTips,
+      },
+    }),
+    {
+      headers: { "Content-Type": "application/json" },
+    },
+  );
 });

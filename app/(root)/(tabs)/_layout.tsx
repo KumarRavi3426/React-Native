@@ -1,11 +1,14 @@
 import { Feather } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
+import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const useNativeTabs = Platform.OS === "ios";
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+
   if (useNativeTabs) {
     return (
       <NativeTabs
@@ -18,28 +21,28 @@ export default function TabLayout() {
         }}
       >
         <NativeTabs.Trigger name="index">
-          <Label>Home</Label>
-          <Icon sf="house.fill" />
+          <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon sf="house.fill" />
         </NativeTabs.Trigger>
 
         <NativeTabs.Trigger name="transactions">
-          <Icon sf="list.bullet" />
-          <Label>Transactions</Label>
+          <NativeTabs.Trigger.Icon sf="list.bullet" />
+          <NativeTabs.Trigger.Label>Transactions</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
 
         <NativeTabs.Trigger name="add-transaction">
-          <Icon sf="plus.circle.fill" />
-          <Label>Add</Label>
+          <NativeTabs.Trigger.Icon sf="plus.circle.fill" />
+          <NativeTabs.Trigger.Label>Add</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
 
         <NativeTabs.Trigger name="assistant">
-          <Icon sf="brain.head.profile" />
-          <Label>Assistant</Label>
+          <NativeTabs.Trigger.Icon sf="brain.head.profile" />
+          <NativeTabs.Trigger.Label>Assistant</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
 
         <NativeTabs.Trigger name="profile">
-          <Icon sf="person.fill" />
-          <Label>Profile</Label>
+          <NativeTabs.Trigger.Icon sf="person.fill" />
+          <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
       </NativeTabs>
     );
@@ -56,7 +59,8 @@ export default function TabLayout() {
           backgroundColor: "#FFFFFF",
           borderTopColor: "#E8E6DF",
           paddingTop: 4,
-          height: 70,
+          paddingBottom: insets.bottom,
+          height: 70 + insets.bottom,
         },
       }}
     >
@@ -65,7 +69,7 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="home" size={size} color={color} />
+            <Feather name="home" size={size} color={color as string} />
           ),
         }}
       />
@@ -74,7 +78,7 @@ export default function TabLayout() {
         options={{
           title: "Transactions",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="list" size={size} color={color} />
+            <Feather name="list" size={size} color={color as string} />
           ),
         }}
       />
@@ -83,7 +87,7 @@ export default function TabLayout() {
         options={{
           title: "Add",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="plus-circle" size={size} color={color} />
+            <Feather name="plus-circle" size={size} color={color as string} />
           ),
         }}
       />
@@ -92,7 +96,7 @@ export default function TabLayout() {
         options={{
           title: "Assistant",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="cpu" size={size} color={color} />
+            <Feather name="cpu" size={size} color={color as string} />
           ),
         }}
       />
@@ -101,7 +105,7 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="user" size={size} color={color} />
+            <Feather name="user" size={size} color={color as string} />
           ),
         }}
       />

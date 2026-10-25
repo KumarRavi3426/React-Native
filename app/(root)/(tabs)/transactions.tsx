@@ -7,7 +7,7 @@ import { exportTransactionsToCsv } from "@/lib/utils/exportTransactions";
 import { Feather } from "@expo/vector-icons";
 import { eachDayOfInterval, format, startOfDay, startOfMonth } from "date-fns";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -19,8 +19,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { BarChart } from "react-native-gifted-charts";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Svg, { Line, Rect, Text as SvgText } from "react-native-svg";
 
 const FILTERS = ["All", "Income", "Expense"] as const;
 
@@ -32,6 +32,103 @@ function currentMonthDays() {
   const today = startOfDay(new Date());
   return eachDayOfInterval({ start: startOfMonth(today), end: today }).map(
     (d) => ({ key: dayKey(d), label: format(d, "d MMM") }),
+  );
+}
+
+const CHART_HEIGHT = 150;
+const PLOT_HEIGHT = 112;
+const BAR_WIDTH = 7;
+const GROUP_WIDTH = 24;
+const CHART_LEFT_PADDING = 4;
+
+type ChartDatum = {
+  value: number;
+  label?: string;
+  frontColor: string;
+};
+
+function DailyIncomeExpenseChart({ data }: { data: ChartDatum[] }) {
+  const groups = data.reduce<[ChartDatum, ChartDatum][]>(
+    (result, item, index) => {
+      const pairedItem = data[index + 1];
+      if (index % 2 === 0 && pairedItem) {
+        result.push([item, pairedItem]);
+      }
+      return result;
+    },
+    [],
+  );
+  const maxValue = Math.max(...data.map((item) => item.value), 1);
+  const chartWidth = Math.max(groups.length * GROUP_WIDTH + 8, 280);
+  const baseline = PLOT_HEIGHT;
+
+  return (
+    <Svg width={chartWidth} height={CHART_HEIGHT}>
+      {[1, 2, 3].map((section) => {
+        const y = baseline - (PLOT_HEIGHT / 3) * section;
+        return (
+          <Line
+            key={section}
+            x1={0}
+            y1={y}
+            x2={chartWidth}
+            y2={y}
+            stroke="#F0EEE7"
+            strokeWidth={1}
+          />
+        );
+      })}
+      <Line
+        x1={0}
+        y1={baseline}
+        x2={chartWidth}
+        y2={baseline}
+        stroke="#E8E6DF"
+        strokeWidth={1}
+      />
+      {groups.map(([income, expense], index) => {
+        const groupX = CHART_LEFT_PADDING + index * GROUP_WIDTH;
+        const incomeHeight = (income.value / maxValue) * PLOT_HEIGHT;
+        const expenseHeight = (expense.value / maxValue) * PLOT_HEIGHT;
+        const labelY = baseline + 19;
+
+        return (
+          <Fragment key={`${income.label ?? index}-${index}`}>
+            {incomeHeight > 0 && (
+              <Rect
+                x={groupX}
+                y={baseline - incomeHeight}
+                width={BAR_WIDTH}
+                height={incomeHeight}
+                rx={3}
+                fill={income.frontColor}
+              />
+            )}
+            {expenseHeight > 0 && (
+              <Rect
+                x={groupX + BAR_WIDTH + 3}
+                y={baseline - expenseHeight}
+                width={BAR_WIDTH}
+                height={expenseHeight}
+                rx={3}
+                fill={expense.frontColor}
+              />
+            )}
+            {income.label && (
+              <SvgText
+                x={groupX + BAR_WIDTH + 1.5}
+                y={labelY}
+                fill="#8A8D96"
+                fontSize={7}
+                textAnchor="middle"
+              >
+                {income.label}
+              </SvgText>
+            )}
+          </Fragment>
+        );
+      })}
+    </Svg>
   );
 }
 
@@ -303,24 +400,10 @@ export default function TransactionsScreen() {
                   </View>
                 </View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-                  <BarChart
-                    data={dailyIncomeExpense}
-                    width={Math.max(dailyIncomeExpense.length * 9, 280)}
-                    height={120}
-                    barWidth={6}
-                    spacing={4}
-                    hideYAxisText
-                    xAxisColor="#E8E6DF"
-                    yAxisColor="transparent"
-                    rulesColor="#F0EEE7"
-                    noOfSections={3}
-                    xAxisLabelTextStyle={{ color: "#8A8D96", fontSize: 7 }}
-                    isThreeD={false}
-                    roundedTop
-                  />
+                  <DailyIncomeExpenseChart data={dailyIncomeExpense} />
                 </ScrollView>
               </View>
-            ) : null
+            ) : undefined
           }
           ListEmptyComponent={
             <View className="items-center justify-center py-20">

@@ -1,5 +1,11 @@
 # React Native Notes
 
+npx expo start --dev-client --tunnel  
+
+usb debugging on  
+adb reverse tcp:8081 tcp:8081  
+npx expo start --go --localhost  
+
 npx expo start --tunnel --clear  
 needs to build the app in expo again after making changes to packages, or new route added
 

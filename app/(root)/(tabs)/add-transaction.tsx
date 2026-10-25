@@ -1,24 +1,24 @@
 import { AIActionCard } from "@/components/AIActionCard";
 import { CalendarPicker } from "@/components/CalendarPicker";
-import { AI_GRADIENT, AI_GRADIENT_REVERSE } from "@/constants/theme";
 import { PillGroup } from "@/components/PillGroup";
 import { ReceiptScannerModal } from "@/components/ReceiptScannerModal";
 import { VoiceRecorderModal } from "@/components/VoiceRecorderModal";
 import {
-  CategoryKey,
-  EXPENSE_CATEGORIES,
-  INCOME_CATEGORIES,
+    CategoryKey,
+    EXPENSE_CATEGORIES,
+    INCOME_CATEGORIES,
 } from "@/constants/categories";
+import { AI_GRADIENT, AI_GRADIENT_REVERSE } from "@/constants/theme";
 import { useCreateTransaction } from "@/hooks/mutations/useTransactionMutations";
 import { useAccountsQuery } from "@/hooks/queries/useAccountsQuery";
 import {
-  TransactionFormValues,
-  transactionSchema,
+    TransactionFormValues,
+    transactionSchema,
 } from "@/lib/schemas/transaction";
 import { Account } from "@/lib/services/accounts";
 import {
-  ExtractedTransaction,
-  extractTransactionFromReceipt,
+    ExtractedTransaction,
+    extractTransactionFromReceipt,
 } from "@/lib/services/extractTransaction";
 import { InputMethod } from "@/lib/services/transactions";
 import { useUser } from "@clerk/expo";
@@ -29,15 +29,15 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -170,30 +170,40 @@ export default function AddTransactionScreen() {
 
     const parsed = parseFloat(values.amount.replace(/,/g, ""));
 
-    const { error: createError } = await createTransaction({
-      user_id: user.id,
-      account_id: values.accountId,
-      type: values.type,
-      amount: parsed,
-      category: values.category,
-      description: values.description?.trim() || null,
-      date: values.date.toISOString(),
-      input_method: inputMethod,
-      voice_transcript: inputMethod === "VOICE" ? voiceTranscript : null,
-    });
-
-    if (createError) {
-      setError("Something went wrong. Please try again.");
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      setError("Enter a valid amount.");
       return;
     }
 
-    resetForm(DEFAULT_VALUES(accounts));
-    setInputMethod("MANUAL");
-    setVoiceTranscript(null);
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace("/(root)/(tabs)/transactions");
+    try {
+      const { error: createError } = await createTransaction({
+        user_id: user.id,
+        account_id: values.accountId,
+        type: values.type,
+        amount: parsed,
+        category: values.category,
+        description: values.description?.trim() || null,
+        date: values.date.toISOString(),
+        input_method: inputMethod,
+        voice_transcript: inputMethod === "VOICE" ? voiceTranscript : null,
+      });
+
+      if (!createError) {
+        resetForm(DEFAULT_VALUES(accounts));
+        setInputMethod("MANUAL");
+        setVoiceTranscript(null);
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace("/(root)/(tabs)/transactions");
+        }
+        return;
+      }
+
+      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      console.error("Transaction creation failed:", err);
+      setError("Something went wrong. Please try again.");
     }
   };
 
@@ -399,7 +409,7 @@ export default function AddTransactionScreen() {
             ) : null}
 
             <TouchableOpacity
-              onPress={handleSubmit(onSubmit)}
+              onPress={() => handleSubmit(onSubmit)()}
               disabled={saving}
               className="bg-brand-bg rounded-xl py-4 items-center mb-2"
               activeOpacity={0.85}

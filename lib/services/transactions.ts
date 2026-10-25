@@ -56,10 +56,11 @@ export async function createTransaction(
   if (fetchError) return { transaction, error: fetchError };
 
   const delta = payload.type === "INCOME" ? payload.amount : -payload.amount;
+  const currentBalance = Number(account.balance);
 
   const { error: balanceError } = await supabase
     .from("accounts")
-    .update({ balance: account.balance + delta })
+    .update({ balance: currentBalance + delta })
     .eq("id", payload.account_id);
 
   if (balanceError) return { transaction, error: balanceError };
@@ -92,10 +93,11 @@ export async function deleteTransaction(
   if (fetchError) return { error: fetchError };
 
   const delta = type === "INCOME" ? -amount : amount;
+  const currentBalance = Number(account.balance);
 
   const { error: balanceError } = await supabase
     .from("accounts")
-    .update({ balance: account.balance + delta })
+    .update({ balance: currentBalance + delta })
     .eq("id", accountId);
 
   if (balanceError) return { error: balanceError };
